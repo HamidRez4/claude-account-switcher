@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>ClaudeAccountSwitcher</AssemblyName>
+    <RootNamespace>ClaudeAccountSwitcher</RootNamespace>
+    <ApplicationIcon>app.ico</ApplicationIcon>
+    <Version>0.0.1</Version>
+    <Product>Claude Account Switcher</Product>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SwitcherCore\SwitcherCore.csproj" />
+    <Resource Include="app.ico" />
+  </ItemGroup>
+
+</Project>

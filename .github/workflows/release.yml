@@ -1,0 +1,70 @@
+name: Release
+
+# Every tag like v0.0.1 builds the app and publishes a GitHub Release with the exe.
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Version from tag
+        id: ver
+        shell: bash
+        run: |
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
+            v="${GITHUB_REF_NAME#v}"
+          else
+            v="$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' src/ClaudeAccountSwitcher/ClaudeAccountSwitcher.csproj)"
+          fi
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+          echo "Building version $v"
+
+      - name: Build
+        run: dotnet build ClaudeAccountSwitcher.sln -c Release -p:Version=${{ steps.ver.outputs.version }}
+
+      - name: Smoke test
+        run: dotnet run --project tests/SwitcherCore.Smoke -c Release --no-build -- --fixture
+
+      - name: Publish
+        shell: bash
+        run: |
+          v="${{ steps.ver.outputs.version }}"
+          proj=src/ClaudeAccountSwitcher/ClaudeAccountSwitcher.csproj
+          common="-c Release -r win-x64 -p:PublishSingleFile=true -p:DebugType=none -p:Version=$v"
+          # Small exe, needs the .NET 9 Desktop Runtime.
+          dotnet publish $proj $common --self-contained false -o out/fd
+          # Larger exe that runs without installing .NET.
+          dotnet publish $proj $common --self-contained true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -o out/sc
+          mkdir -p release
+          cp out/fd/ClaudeAccountSwitcher.exe "release/ClaudeAccountSwitcher-v$v-win-x64.exe"
+          cp out/sc/ClaudeAccountSwitcher.exe "release/ClaudeAccountSwitcher-v$v-win-x64-standalone.exe"
+          ls -la release
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ClaudeAccountSwitcher-v${{ steps.ver.outputs.version }}
+          path: release/*
+
+      - name: GitHub Release
+        if: github.ref_type == 'tag'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" release/* \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes \
+            --notes "**ClaudeAccountSwitcher-$GITHUB_REF_NAME-win-x64.exe** needs the [.NET 9 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/9.0). **…-standalone.exe** runs without it."

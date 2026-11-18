@@ -131,10 +131,18 @@
                         </StackPanel>
                     </Button>
                     <Button Style="{StaticResource GhostButton}" Margin="8,0,0,0" Click="OnOpenBackups"
-                            ToolTip="Every transfer backs up the files it replaces or removes">
+                            ToolTip="Every transfer first copies the files it replaces or removes here">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="&#xE81C;" Style="{StaticResource Icon}" FontSize="12" />
-                            <TextBlock Text="Backups" Margin="8,0,0,0" />
+                            <TextBlock Text="Transfer history" Margin="8,0,0,0" />
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource GhostButton}" Margin="8,0,0,0" Click="OnBackupRestore"
+                            BorderBrush="#7A4636" Background="{StaticResource AccentSoftBrush}"
+                            ToolTip="Full backup of all Claude sessions and settings, e.g. before reinstalling Windows">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE74E;" Style="{StaticResource Icon}" FontSize="12" Foreground="{StaticResource AccentBrush}" />
+                            <TextBlock Text="Backup &amp; Restore" Margin="8,0,0,0" />
                         </StackPanel>
                     </Button>
                 </StackPanel>

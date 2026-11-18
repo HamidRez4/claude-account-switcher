@@ -9,7 +9,7 @@
     <AssemblyName>ClaudeAccountSwitcher</AssemblyName>
     <RootNamespace>ClaudeAccountSwitcher</RootNamespace>
     <ApplicationIcon>app.ico</ApplicationIcon>
-    <Version>0.0.1</Version>
+    <Version>0.0.2</Version>
     <Product>Claude Account Switcher</Product>
   </PropertyGroup>
 

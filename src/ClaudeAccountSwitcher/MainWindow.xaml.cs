@@ -158,28 +158,7 @@ public partial class MainWindow : Window
         Banner.Visibility = _desktopRunning ? Visibility.Visible : Visibility.Collapsed;
     }
 
-    static bool IsClaudeDesktopRunning()
-    {
-        try
-        {
-            foreach (var p in Process.GetProcessesByName("claude"))
-            {
-                try
-                {
-                    var path = p.MainModule?.FileName ?? "";
-                    if (path.Contains("claude-code", StringComparison.OrdinalIgnoreCase)) continue;
-                    if (path.Contains("AnthropicClaude", StringComparison.OrdinalIgnoreCase) ||
-                        path.Contains("WindowsApps", StringComparison.OrdinalIgnoreCase) ||
-                        path.Contains(@"\Claude\", StringComparison.OrdinalIgnoreCase))
-                        return true;
-                }
-                catch { /* access denied: ignore */ }
-                finally { p.Dispose(); }
-            }
-        }
-        catch { }
-        return false;
-    }
+    static bool IsClaudeDesktopRunning() => ClaudeProcesses.DesktopRunning();
 
     // ------------------------------------------------------------------ source / target
 
@@ -511,6 +490,19 @@ public partial class MainWindow : Window
     {
         Directory.CreateDirectory(AppSettings.BackupsDir);
         Process.Start(new ProcessStartInfo("explorer.exe", $"\"{AppSettings.BackupsDir}\"") { UseShellExecute = true });
+    }
+
+    async void OnBackupRestore(object sender, RoutedEventArgs e)
+    {
+        _settings.Save(); // so a backup holds the latest labels
+        var w = new BackupWindow { Owner = this };
+        w.ShowDialog();
+        if (w.Restored)
+        {
+            _settings = AppSettings.Load();
+            ShowArchived.IsChecked = _settings.ShowArchived;
+            await ReloadAsync(keepSelection: false);
+        }
     }
 
     void OnCopyUuid(object sender, RoutedEventArgs e)
